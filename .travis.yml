@@ -1,0 +1,20 @@
+sudo: required
+services:
+  - docker
+  
+before_install:
+  - docker build -t jamdahl/multi-docker-test -f ./client/Dockerfile.dev ./client
+
+script:
+  - docker run jamdahl/multi-docker-test npm test -- --coverage
+  
+after_success:
+  - docker build -t jamdahl/multi-docker-client ./client
+  - docker build -t jamdahl/multi-docker-nginx ./nginx
+  - docker built -t jamdahl/multi-docker-server ./server
+  - docker build -t jamdahl/multi-docker-worker ./worker
+  - echo "$DOCKER_PW" | docker login -u "$DOCKER_ID" --password-stdin
+  - docker push jamdahl/multi-docker-client
+  - docker push jamdahl/multi-docker-nginx
+  - docker push jamdahl/multi-docker-server
+  - docker push jamdahl/multi-docker-worker
